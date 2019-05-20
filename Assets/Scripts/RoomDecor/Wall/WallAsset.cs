@@ -12,8 +12,8 @@ namespace RoomDecor.Asset
         private Vector3 mLocation;
         private Vector3 mRotationEuler;
         private Vector3 mScale;
-        private Vector3 leftPoint;
-        private Vector3 rightPoint;
+        [SerializeField]private Transform leftPoint;
+        [SerializeField]private Transform rightPoint;
 
         public override string AssetName
         {
@@ -62,7 +62,7 @@ namespace RoomDecor.Asset
                 transform.localScale = mScale;
             }
         }
-        public Vector3 LeftPoint
+        public Transform LeftPoint
         {
             get
             {
@@ -73,7 +73,7 @@ namespace RoomDecor.Asset
                 leftPoint = value;
             }
         }
-        public Vector3 RightPoint
+        public Transform RightPoint
         {
             get
             {
@@ -86,23 +86,34 @@ namespace RoomDecor.Asset
             }
         }
 
+        private void OnEnable()
+        {
+            EventManager.OnWallHeightChanged += SetWallHeight;
+        }
+
+        private void OnDisable()
+        {
+            EventManager.OnWallHeightChanged -= SetWallHeight;
+        }
+
         void Initialize()
         {
             SetLocation();
             SetRotation();
             SetScale();
+            SetLeftRightParent();
         }
 
         // Sets the Location
         void SetLocation()
         {
-            Location = MathUtilities.GetMidPoint(leftPoint, rightPoint);
+            Location = MathUtilities.GetMidPoint(leftPoint.position, rightPoint.position);
         }
 
         // Sets the rotation
         void SetRotation()
         {
-            transform.right = (leftPoint - transform.position).normalized;
+            transform.right = (leftPoint.position - transform.position).normalized;
             RotationEuler = transform.eulerAngles;
         }
 
@@ -110,7 +121,24 @@ namespace RoomDecor.Asset
         void SetScale()
         {
             var scale = transform.localScale;
-            scale.x = MathUtilities.DistanceBetweenTwoPoints(leftPoint, rightPoint);
+            scale.x = MathUtilities.DistanceBetweenTwoPoints(leftPoint.position, rightPoint.position);
+            Scale = scale;
+        }
+
+        void SetLeftRightParent()
+        {
+            if(leftPoint != null && rightPoint != null)
+            {
+                leftPoint.SetParent(this.transform, true);
+                rightPoint.SetParent(this.transform, true);
+            }
+        }
+
+        // Sets the wall height
+        void SetWallHeight(float wallHeight)
+        {
+            var scale = Scale;
+            scale.y = wallHeight;
             Scale = scale;
         }
     }

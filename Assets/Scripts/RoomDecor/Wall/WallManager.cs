@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 
 using RoomDecor.Asset;
 
@@ -12,10 +13,31 @@ namespace RoomDecor.Wall
         // Wall Prefab
         public GameObject wallPrefab;
 
+        [Header("Wall UI Elements")]
+        public Slider wallHeightSlider;
+
+        [SerializeField]private float wallHeight;
+
+        // Wall Height
+        public float WallHeight
+        {
+            get
+            {
+                return wallHeight;
+            }
+            set
+            {
+                wallHeight = value;
+                EventManager.OnChangeWallHeight(wallHeight);
+            }
+        }
+
         private void Awake()
         {
             if (Instance == null)
+            {
                 Instance = this;
+            }
         }
 
         /// <summary>
@@ -33,12 +55,25 @@ namespace RoomDecor.Wall
             
             var wall = Instantiate(wallPrefab);
             var wallAsset = wall.GetComponent<WallAsset>();
-            var leftPoint = new Vector3(pointA.x, 0f, pointA.y);
-            var rightPoint = new Vector3(pointB.x, 0f, pointB.y);
+            var leftPointPos = new Vector3(pointA.x, 0f, pointA.y);
+            var rightPointPos = new Vector3(pointB.x, 0f, pointB.y);
 
-            wallAsset.LeftPoint = leftPoint;
-            wallAsset.RightPoint= rightPoint;
+            var leftPoint = new GameObject("Left Point");
+            leftPoint.transform.position = leftPointPos;
+            var rightPoint = new GameObject("Right Point");
+            rightPoint.transform.position = rightPointPos;
+
+            wallAsset.LeftPoint = leftPoint.transform;
+            wallAsset.RightPoint= rightPoint.transform;
+            ChangeWallHeight();
             
+        }
+
+        // Change the wall height based on wall slider value 
+        public void ChangeWallHeight()
+        {
+            Debug.Log(wallHeightSlider.value);
+            WallHeight = wallHeightSlider.value;// 9ft wall height
         }
     }
 }
